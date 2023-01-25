@@ -51,7 +51,7 @@ public class MemberService {
         this.planService = planService;
     }
 
-    public Member createMember(Member member, String authNum) {
+    public Member createMember(Member member) {
         if (memberRepository.findByEmail(member.getEmail()).isPresent()) {
             Member findMember = memberRepository.findByEmail(member.getEmail()).get();
             if (findMember.getMemberStatus().equals(Member.MemberStatus.MEMBER_QUIT)) {
@@ -59,14 +59,11 @@ public class MemberService {
             } else throw new BusinessLogicException(ExceptionCode.MEMBER_EXISTS);
         }
 
-        //이메일 인증 (인증 번호)
-        try {
-            if (!redisUtil.get(member.getEmail() + "_auth").equals(authNum)) {
-                throw new BusinessLogicException(ExceptionCode.INVALID_EMAIL_AUTH_NUMBER);
-            }
-        } catch (NullPointerException e) { //인증번호 발송되지 않은 이메일인 경우 예외처리
-            throw new BusinessLogicException(ExceptionCode.INVALID_EMAIL_AUTH);
+        //이메일 인증 전 회원 가입 요청시 예외
+        if (redisUtil.get(member.getEmail() + "_confirm") == null) {
+            throw new BusinessLogicException(ExceptionCode.EMAIL_AUTH_REQUIRED);
         }
+        redisUtil.delete(member.getEmail() + "_confirm");
 
         //패스워드 암호화
         String encryptedPassword = passwordEncoder.encode(member.getPassword());
