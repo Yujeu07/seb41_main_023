@@ -43,6 +43,9 @@ public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
         if (kakao != null) {
             email = kakao.get("email").toString();
             clientId = "KAKAO";
+        } else if (attributes.get("email") == null) {
+            email = attributes.get("id").toString() + "@facebook.com";
+            clientId = "FACEBOOK";
         } else {
             email = attributes.get("email").toString();
             clientId = "FACEBOOK";
@@ -121,12 +124,13 @@ public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
         return UriComponentsBuilder
                 .newInstance()
                 .scheme("http")
-//                .host("travel-logs.s3-website.ap-northeast-2.amazonaws.com")//S3주소로
-                .host("localhost")
-                .port(8080)
+                .host("tridom.s3-website.ap-northeast-2.amazonaws.com")//S3주소로
+//                .host("localhost")
+//                .port(8080)
                 .path("/loading")
                 .queryParams(queryParams)
                 .build()
                 .toUri();
+
     }
 }
